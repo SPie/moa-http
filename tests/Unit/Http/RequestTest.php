@@ -2,7 +2,6 @@
 
 namespace Moa\Tests\Unit\Http;
 
-use Moa\Http\Contracts\Header;
 use Moa\Http\Contracts\HeadersBag;
 use Moa\Http\Contracts\Stream;
 use Moa\Http\Contracts\Uri;
@@ -312,6 +311,349 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
+    /**
+     * @return void
+     */
+    public function testGetMethod(): void
+    {
+        $method = $this->createRandomMethod();
+
+        $this->assertEquals($method, $this->getRequest($method)->getMethod());
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithMethod(): void
+    {
+        $method = $this->createRandomMethod();
+        $request = $this->getRequest();
+
+        $newRequest = $request->withMethod($method);
+
+        $this->assertEquals($method, $newRequest->getMethod());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetUri(): void
+    {
+        $uri = $this->createUri();
+
+        $this->assertEquals($uri, $this->getRequest(null, $uri)->getUri());
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUri(): void
+    {
+        $host = $this->getFaker()->word;
+        $uri = $this->createUri();
+        $this->mockUriGetHost($uri, $host);
+        $request = $this->getRequest();
+
+        $newRequest = $request->withUri($uri);
+
+        $this->assertEquals($uri, $newRequest->getUri());
+        $this->assertFalse($newRequest === $request);
+        $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUriWithPreexistingHost(): void
+    {
+        $uri = $this->createUri();
+        $preExistingHost = $this->getFaker()->word;
+        $headers = $this->createHeadersBag();
+        $this->mockHeadersBagGetHeader($headers, [$preExistingHost], 'Host');
+        $request = $this->getRequest();
+        $this->setReflectionProperty($request, 'headers', $headers);
+
+        $newRequest = $request->withUri($uri);
+
+        $this->getReflectionProperty($newRequest, 'headers')->shouldNotHaveReceived('addHeader');
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUriWithPreserveHostWithEmptyHostHeader(): void
+    {
+        $host = $this->getFaker()->word;
+        $uri = $this->createUri();
+        $this->mockUriGetHost($uri, $host);
+        $request = $this->getRequest();
+
+        $newRequest = $request->withUri($uri, true);
+
+        $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUriWithPreserveHostWithNewHost(): void
+    {
+        $host = $this->getFaker()->word;
+        $uri = $this->createUri();
+        $this->mockUriGetHost($uri, $host);
+        $request = $this->getRequest();
+
+        $newRequest = $request->withUri($uri, true);
+
+        $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUriWithPreserveHostWithOldHost(): void
+    {
+        $preexistingHost = $this->getFaker()->word;
+        $headers = $this->createHeadersBag();
+        $this->mockHeadersBagGetHeader($headers, [$preexistingHost], 'Host');
+        $host = $this->getFaker()->word;
+        $uri = $this->createUri();
+        $this->mockUriGetHost($uri, $host);
+        $request = $this->getRequest();
+        $this->setReflectionProperty($request, 'headers', $headers);
+
+        $newRequest = $request->withUri($uri, true);
+
+        $this->getReflectionProperty($newRequest, 'headers')->shouldNotHaveReceived('addHeader');
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetServerParams(): void
+    {
+        $serverParams = [$this->getFaker()->word => $this->getFaker()->word];
+
+        $this->assertEquals(
+            $serverParams,
+            $this->getRequest(null, null, null, [], null, $serverParams)->getServerParams()
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetCookieParams(): void
+    {
+        $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
+
+        $this->assertEquals(
+            $cookieParams,
+            $this->getRequest(null, null, null, $cookieParams)->getCookieParams()
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithCookieParams(): void
+    {
+        $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest(null, null, null, $cookieParams);
+
+        $newRequest = $request->withCookieParams($cookieParams);
+
+        $this->assertEquals($cookieParams, $newRequest->getCookieParams());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetQueryParams(): void
+    {
+        $name = $this->getFaker()->word;
+        $value = $this->getFaker()->word;
+        $uri = $this->createUri();
+        $this->mockUriGetQuery($uri, \sprintf('%s=%s', $name, $value));
+        $request = $this->getRequest(null, $uri);
+
+        $this->assertEquals([$name => $value], $request->getQueryParams());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetQueryParamsWithoutQuery(): void
+    {
+        $request = $this->getRequest();
+
+        $this->assertEquals([], $request->getQueryParams());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetQueryParamsWithEncodedParameter(): void
+    {
+        $uri = $this->createUri();
+        $this->mockUriGetQuery($uri, \sprintf('%s=%s', '%24', '%25'));
+        $request = $this->getRequest(null, $uri);
+
+        $this->assertEquals(['$' => '%'], $request->getQueryParams());
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithQueryParams(): void
+    {
+        $queryParams = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest();
+
+        $newRequest = $request->withQueryParams($queryParams);
+
+        $this->assertEquals($queryParams, $newRequest->getQueryParams());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetUploadedFiles(): void
+    {
+        $uploadedFiles = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest(null, null, null, [], null, [], $uploadedFiles);
+
+        $this->assertEquals($uploadedFiles, $request->getUploadedFiles());
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithUploadedFiles(): void
+    {
+        $uploadedFiles = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest();
+
+        $newRequest = $request->withUploadedFiles($uploadedFiles);
+
+        $this->assertEquals($uploadedFiles, $newRequest->getUploadedFiles());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetParsedBody(): void
+    {
+        $parsedBody = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest(null, null, null, [], null, [], [], $parsedBody);
+
+        $this->assertEquals($parsedBody, $request->getParsedBody());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetParsedBodyWithoutParsedBody(): void
+    {
+        $this->assertNull($this->getRequest()->getParsedBody());
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithParsedBody(): void
+    {
+        $parsedBody = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest();
+
+        $newRequest = $request->withParsedBody($parsedBody);
+
+        $this->assertEquals($parsedBody, $newRequest->getParsedBody());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithParsedBodyWithoutParsedBody(): void
+    {
+        $request = $this->getRequest(null, null, null, [], null, [], [], [$this->getFaker()->word => $this->getFaker()->word]);
+
+        $newRequest = $request->withParsedBody(null);
+
+        $this->assertNull($newRequest->getParsedBody());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAttributes(): void
+    {
+        $attributes = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getRequest();
+        $this->setReflectionProperty($request, 'attributes', $attributes);
+
+        $this->assertEquals($attributes, $request->getAttributes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAttribute(): void
+    {
+        $attribute = $this->getFaker()->word;
+        $attributeName = $this->getFaker()->word;
+        $request = $this->getRequest();
+        $this->setReflectionProperty($request, 'attributes', [$attributeName => $attribute]);
+
+        $this->assertEquals($attribute, $request->getAttribute($attributeName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAttributeWithoutAttributeFound(): void
+    {
+        $default = $this->getFaker()->word;
+        $request = $this->getRequest();
+
+        $this->assertEquals($default, $request->getAttribute($this->getFaker()->word, $default));
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithAttribute(): void
+    {
+        $attribute = $this->getFaker()->word;
+        $attributeName = $this->getFaker()->word;
+        $request = $this->getRequest();
+
+        $newRequest = $request->withAttribute($attributeName, $attribute);
+
+        $this->assertEquals([$attributeName => $attribute], $newRequest->getAttributes());
+        $this->assertFalse($newRequest === $request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testWithoutAttribute(): void
+    {
+        $attributeName = $this->getFaker()->word;
+        $request = $this->getRequest();
+        $this->setReflectionProperty($request, 'attributes', [$attributeName => $this->getFaker()]);
+
+        $newRequest = $request->withoutAttribute($attributeName);
+
+        $this->assertFalse(isset($newRequest->getAttributes()[$attributeName]));
+        $this->assertFalse($newRequest === $request);
+    }
+
     //endregion
 
     /**
@@ -322,6 +664,7 @@ final class RequestTest extends TestCase
      * @param Stream|null     $body
      * @param array           $serverParams
      * @param array           $uploadedFiles
+     * @param array|null      $parsedBody
      *
      * @return Request
      */
@@ -332,7 +675,8 @@ final class RequestTest extends TestCase
         array $cookies = [],
         Stream $body = null,
         array $serverParams = [],
-        array $uploadedFiles = []
+        array $uploadedFiles = [],
+        array $parsedBody = null
     ): Request {
         return new Request(
             $method ?: $this->createRandomMethod(),
@@ -341,7 +685,8 @@ final class RequestTest extends TestCase
             $cookies,
             $body ?: $this->createStream(),
             $serverParams,
-            $uploadedFiles
+            $uploadedFiles,
+            $parsedBody
         );
     }
 

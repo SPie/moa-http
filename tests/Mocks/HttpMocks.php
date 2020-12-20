@@ -54,6 +54,21 @@ trait HttpMocks
     }
 
     /**
+     * @param Uri|MockInterface $uri
+     * @param string            $host
+     *
+     * @return $this
+     */
+    private function mockUriGetHost(MockInterface $uri, string $host): self
+    {
+        $uri
+            ->shouldReceive('getHost')
+            ->andReturn($host);
+
+        return $this;
+    }
+
+    /**
      * @return Stream
      */
     private function createStream(): Stream
@@ -100,6 +115,23 @@ trait HttpMocks
             ->shouldReceive('addHeader')
             ->with($name, $header)
             ->andReturn($headersBag)
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param HeadersBag|MockInterface $headersBag
+     * @param string                   $name
+     * @param string|string[]          $header
+     *
+     * @return $this
+     */
+    private function assertHeadersBagAddHeader(MockInterface $headersBag, string $name, $header): self
+    {
+        $headersBag
+            ->shouldHaveReceived('addHeader')
+            ->with($name, $header)
             ->once();
 
         return $this;

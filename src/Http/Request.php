@@ -21,9 +21,9 @@ final class Request implements RequestContract
     private string $method;
 
     /**
-     * @var Uri
+     * @var UriInterface
      */
-    private Uri $uri;
+    private UriInterface $uri;
 
     /**
      * @var HeadersBag
@@ -71,6 +71,11 @@ final class Request implements RequestContract
     private array $attributes;
 
     /**
+     * @var array|null
+     */
+    private ?array $parsedBody;
+
+    /**
      * Request constructor.
      *
      * @param string          $method
@@ -80,6 +85,7 @@ final class Request implements RequestContract
      * @param StreamInterface $body
      * @param array           $serverParams
      * @param array           $uploadedFiles
+     * @param array|null      $parsedBody
      */
     public function __construct(
         string $method,
@@ -88,7 +94,8 @@ final class Request implements RequestContract
         array $cookies,
         StreamInterface $body,
         array $serverParams = [],
-        array $uploadedFiles = []
+        array $uploadedFiles = [],
+        array $parsedBody = null
     ) {
         $this->method        = $method;
         $this->uri           = $uri;
@@ -97,12 +104,18 @@ final class Request implements RequestContract
         $this->body          = $body;
         $this->serverParams  = $serverParams;
         $this->uploadedFiles = $uploadedFiles;
+        $this->parsedBody = $parsedBody;
 
         $this->protocolVersion = !empty($this->serverParams['SERVER_PROTOCOL'])
             ? $this->protocolVersion = \str_replace('HTTP/', '', $this->serverParams['SERVER_PROTOCOL'])
             : '1.1';
 
         $this->requestTarget = null;
+
+        $this->queryParams = [];
+        \parse_str($uri->getQuery(), $this->queryParams);
+
+        $this->attributes = [];
     }
 
     /**
@@ -261,21 +274,24 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return string|void
+     * @return string
      */
     public function getMethod()
     {
-        // TODO: Implement getMethod() method.
+        return $this->method;
     }
 
     /**
      * @param string $method
      *
-     * @return Request|void
+     * @return Request
      */
     public function withMethod($method)
     {
-        // TODO: Implement withMethod() method.
+        $clone = clone $this;
+        $clone->method = $method;
+
+        return $clone;
     }
 
     /**
@@ -283,34 +299,43 @@ final class Request implements RequestContract
      */
     public function getUri()
     {
-        // TODO: Implement getUri() method.
+        return $this->uri;
     }
 
     /**
      * @param UriInterface $uri
      * @param false        $preserveHost
      *
-     * @return Request|void
+     * @return Request
      */
     public function withUri(UriInterface $uri, $preserveHost = false)
     {
-        // TODO: Implement withUri() method.
+        $clone = clone $this;
+        $clone->uri = $uri;
+
+        if (!empty($uri->getHost()) && (!$preserveHost || empty($this->getHeader('Host')))) {
+            $clone->headers->addHeader('Host', $uri->getHost());
+
+            return $clone;
+        }
+
+        return $clone;
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getServerParams()
     {
-        // TODO: Implement getServerParams() method.
+        return $this->serverParams;
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getCookieParams()
     {
-        // TODO: Implement getCookieParams() method.
+        return $this->cookies;
     }
 
     /**
@@ -320,91 +345,106 @@ final class Request implements RequestContract
      */
     public function withCookieParams(array $cookies)
     {
-        // TODO: Implement withCookieParams() method.
+        $clone = clone $this;
+        $clone->cookies = $cookies;
+
+        return $clone;
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getQueryParams()
     {
-        // TODO: Implement getQueryParams() method.
+        return $this->queryParams;
     }
 
     /**
      * @param array $query
      *
-     * @return Request|void
+     * @return Request
      */
     public function withQueryParams(array $query)
     {
-        // TODO: Implement withQueryParams() method.
+        $clone = clone $this;
+        $clone->queryParams = $query;
+
+        return $clone;
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getUploadedFiles()
     {
-        // TODO: Implement getUploadedFiles() method.
+        return $this->uploadedFiles;
     }
 
     /**
      * @param array $uploadedFiles
      *
-     * @return Request|void
+     * @return Request
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
-        // TODO: Implement withUploadedFiles() method.
+        $clone = clone $this;
+        $clone->uploadedFiles = $uploadedFiles;
+
+        return $clone;
     }
 
     /**
-     * @return array|object|void|null
+     * @return array|object|null
      */
     public function getParsedBody()
     {
-        // TODO: Implement getParsedBody() method.
+        return $this->parsedBody;
     }
 
     /**
      * @param array|object|null $data
      *
-     * @return Request|void
+     * @return Request
      */
     public function withParsedBody($data)
     {
-        // TODO: Implement withParsedBody() method.
+        $clone = clone $this;
+        $clone->parsedBody = $data;
+
+        return $clone;
     }
 
     /**
-     * @return array|void
+     * @return array
      */
     public function getAttributes()
     {
-        // TODO: Implement getAttributes() method.
+        return $this->attributes;
     }
 
     /**
      * @param string $name
      * @param null   $default
      *
-     * @return mixed|void
+     * @return mixed
      */
     public function getAttribute($name, $default = null)
     {
-        // TODO: Implement getAttribute() method.
+        return $this->attributes[$name] ?? $default;
     }
 
     /**
      * @param string $name
      * @param mixed  $value
      *
-     * @return Request|void
+     * @return Request
      */
     public function withAttribute($name, $value)
     {
-        // TODO: Implement withAttribute() method.
+        $clone =  clone $this;
+        $clone->attributes[$name] = $value;
+
+        return $clone;
     }
 
     /**
@@ -414,6 +454,9 @@ final class Request implements RequestContract
      */
     public function withoutAttribute($name)
     {
-        // TODO: Implement withoutAttribute() method.
+        $clone = clone $this;
+        unset($clone->attributes[$name]);
+
+        return $clone;
     }
 }
