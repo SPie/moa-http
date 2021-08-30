@@ -2,18 +2,8 @@
 
 namespace Moa\Tests;
 
-/**
- * Trait Reflection
- *
- * @package Moa\Tests
- */
 trait Reflection
 {
-    /**
-     * @param mixed $object
-     *
-     * @return \ReflectionObject
-     */
     private function getReflectionObject($object): \ReflectionObject
     {
         return new \ReflectionObject($object);
@@ -21,7 +11,6 @@ trait Reflection
 
     /**
      * @param mixed  $object
-     * @param string $propertyName
      * @param mixed  $propertyValue
      *
      * @return mixed
@@ -38,7 +27,6 @@ trait Reflection
 
     /**
      * @param mixed  $object
-     * @param string $propertyName
      *
      * @return mixed
      */

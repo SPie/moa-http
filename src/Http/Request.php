@@ -4,92 +4,38 @@ namespace Moa\Http;
 
 use Moa\Http\Contracts\HeadersBag;
 use Moa\Http\Contracts\Request as RequestContract;
-use Moa\Http\Contracts\Uri;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
-/**
- * Class Request
- *
- * @package Moa\Http
- */
 final class Request implements RequestContract
 {
-    /**
-     * @var string
-     */
     private string $method;
 
-    /**
-     * @var UriInterface
-     */
     private UriInterface $uri;
 
-    /**
-     * @var HeadersBag
-     */
     private HeadersBag $headers;
 
-    /**
-     * @var array
-     */
     private array $cookies;
 
-    /**
-     * @var StreamInterface
-     */
     private StreamInterface $body;
 
-    /**
-     * @var array
-     */
     private array $serverParams;
 
-    /**
-     * @var array
-     */
     private array $uploadedFiles;
 
-    /**
-     * @var string
-     */
     private string $protocolVersion;
 
-    /**
-     * @var string|null
-     */
     private ?string $requestTarget;
 
-    /**
-     * @var array
-     */
     private array $queryParams;
 
-    /**
-     * @var array
-     */
     private array $attributes;
 
-    /**
-     * @var array|null
-     */
     private ?array $parsedBody;
 
-    /**
-     * Request constructor.
-     *
-     * @param string          $method
-     * @param Uri             $uri
-     * @param HeadersBag      $headers
-     * @param array           $cookies
-     * @param StreamInterface $body
-     * @param array           $serverParams
-     * @param array           $uploadedFiles
-     * @param array|null      $parsedBody
-     */
     public function __construct(
         string $method,
-        Uri $uri,
+        UriInterface $uri,
         HeadersBag $headers,
         array $cookies,
         StreamInterface $body,
@@ -119,7 +65,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return string|void
+     * @inheritDoc
      */
     public function getProtocolVersion()
     {
@@ -127,9 +73,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $version
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withProtocolVersion($version)
     {
@@ -140,7 +84,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return \string[][]
+     * @inheritDoc
      */
     public function getHeaders()
     {
@@ -148,9 +92,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function hasHeader($name)
     {
@@ -158,9 +100,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     *
-     * @return string[]
+     * @inheritDoc
      */
     public function getHeader($name)
     {
@@ -168,9 +108,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     *
-     * @return string
+     * @inheritDoc
      */
     public function getHeaderLine($name)
     {
@@ -178,10 +116,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string          $name
-     * @param string|string[] $value
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withHeader($name, $value)
     {
@@ -192,10 +127,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string          $name
-     * @param string|string[] $value
-     *
-     * @return Request|void
+     * @inheritDoc
      */
     public function withAddedHeader($name, $value)
     {
@@ -206,9 +138,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     *
-     * @return Request|void
+     * @inheritDoc
      */
     public function withoutHeader($name)
     {
@@ -219,7 +149,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return StreamInterface|void
+     * @inheritDoc
      */
     public function getBody()
     {
@@ -227,9 +157,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param StreamInterface $body
-     *
-     * @return Request|void
+     * @inheritDoc
      */
     public function withBody(StreamInterface $body)
     {
@@ -240,7 +168,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return string
+     * @inheritDoc
      */
     public function getRequestTarget()
     {
@@ -261,9 +189,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param mixed $requestTarget
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withRequestTarget($requestTarget)
     {
@@ -274,7 +200,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return string
+     * @inheritDoc
      */
     public function getMethod()
     {
@@ -282,9 +208,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $method
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withMethod($method)
     {
@@ -295,7 +219,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return UriInterface|void
+     * @inheritDoc
      */
     public function getUri()
     {
@@ -303,10 +227,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param UriInterface $uri
-     * @param false        $preserveHost
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withUri(UriInterface $uri, $preserveHost = false)
     {
@@ -323,7 +244,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array
+     * @inheritDoc
      */
     public function getServerParams()
     {
@@ -331,7 +252,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array
+     * @inheritDoc
      */
     public function getCookieParams()
     {
@@ -339,9 +260,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param array $cookies
-     *
-     * @return Request|void
+     * @inheritDoc
      */
     public function withCookieParams(array $cookies)
     {
@@ -352,7 +271,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array
+     * @inheritDoc
      */
     public function getQueryParams()
     {
@@ -360,9 +279,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param array $query
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withQueryParams(array $query)
     {
@@ -373,7 +290,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array
+     * @inheritDoc
      */
     public function getUploadedFiles()
     {
@@ -381,9 +298,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param array $uploadedFiles
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
@@ -394,7 +309,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array|object|null
+     * @inheritDoc
      */
     public function getParsedBody()
     {
@@ -402,9 +317,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param array|object|null $data
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withParsedBody($data)
     {
@@ -415,7 +328,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @return array
+     * @inheritDoc
      */
     public function getAttributes()
     {
@@ -423,10 +336,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     * @param null   $default
-     *
-     * @return mixed
+     * @inheritDoc
      */
     public function getAttribute($name, $default = null)
     {
@@ -434,10 +344,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return Request
+     * @inheritDoc
      */
     public function withAttribute($name, $value)
     {
@@ -448,9 +355,7 @@ final class Request implements RequestContract
     }
 
     /**
-     * @param string $name
-     *
-     * @return Request|void
+     * @inheritDoc
      */
     public function withoutAttribute($name)
     {

@@ -4,17 +4,12 @@ namespace Moa\Tests\Unit\Http;
 
 use Moa\Http\Contracts\HeadersBag;
 use Moa\Http\Contracts\Stream;
-use Moa\Http\Contracts\Uri;
 use Moa\Http\Request;
 use Moa\Tests\Mocks\HttpMocks;
 use Moa\Tests\Reflection;
 use Moa\Tests\TestCase;
+use Psr\Http\Message\UriInterface;
 
-/**
- * Class RequestTest
- *
- * @package Moa\Tests\Http
- */
 final class RequestTest extends TestCase
 {
     use HttpMocks;
@@ -22,17 +17,11 @@ final class RequestTest extends TestCase
 
     //region Tests
 
-    /**
-     * @return void
-     */
     public function testGetProtocolVersionWithDefault(): void
     {
         $this->assertEquals('1.1', $this->getRequest()->getProtocolVersion());
     }
 
-    /**
-     * @return void
-     */
     public function testGetProtocolVersionWithManuallySetProtocol(): void
     {
         $protocolVersion = $this->getFaker()->word;
@@ -42,9 +31,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($protocolVersion, $request->getProtocolVersion());
     }
 
-    /**
-     * @return void
-     */
     public function testSetProtocolVersionWithServerParams(): void
     {
         $protocolVersion = $this->getFaker()->word;
@@ -57,9 +43,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testWithProtocolVersion(): void
     {
         $protocolVersion = $this->getFaker()->word;
@@ -71,9 +54,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($request === $newRequest);
     }
 
-    /**
-     * @return void
-     */
     public function testGetHeader(): void
     {
         $headers = [$this->getFaker()->word => [$this->getFaker()->word]];
@@ -83,9 +63,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($headers, $this->getRequest(null, null, $headerBag)->getHeaders());
     }
 
-    /**
-     * @return void
-     */
     public function testHasHeaderWithHeader(): void
     {
         $headerName = $this->getFaker()->word;
@@ -95,17 +72,11 @@ final class RequestTest extends TestCase
         $this->assertTrue($this->getRequest(null, null, $headersBag)->hasHeader($headerName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasHeaderWithoutHeader(): void
     {
         $this->assertFalse($this->getRequest()->hasHeader($this->getFaker()->word));
     }
 
-    /**
-     * @return void
-     */
     public function testGetHeaderWithHeader(): void
     {
         $headerName = $this->getFaker()->word;
@@ -119,9 +90,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetHeaderWithoutHeader(): void
     {
         $headerName = $this->getFaker()->word;
@@ -134,9 +102,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetHeaderLine(): void
     {
         $headerName = $this->getFaker()->word;
@@ -150,9 +115,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetHeaderLineWithoutHeader(): void
     {
         $headerName = $this->getFaker()->word;
@@ -165,9 +127,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testWithHeader(): void
     {
         $header = $this->getFaker()->word;
@@ -181,9 +140,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testWithAddedHeader(): void
     {
         $header = $this->getFaker()->word;
@@ -197,9 +153,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testWithputHeader(): void
     {
         $headerName = $this->getFaker()->word;
@@ -212,9 +165,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetBody(): void
     {
         $body = $this->createStream();
@@ -225,9 +175,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testWithBody(): void
     {
         $body = $this->createStream();
@@ -239,9 +186,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($request === $newRequest);
     }
 
-    /**
-     * @return void
-     */
     public function testGetRequestTargetWithRequestTarget(): void
     {
         $requestTarget = \sprintf('/%s', $this->getFaker()->word);
@@ -251,17 +195,11 @@ final class RequestTest extends TestCase
         $this->assertEquals($requestTarget, $request->getRequestTarget());
     }
 
-    /**
-     * @return void
-     */
     public function testGetRequestTargetWithoutRequestTarget(): void
     {
         $this->assertEquals('/', $this->getRequest()->getRequestTarget());
     }
 
-    /**
-     * @return void
-     */
     public function testGetRequestTargetWithRequestTargetFromUri(): void
     {
         $path = \sprintf('/%s', $this->getFaker()->word);
@@ -272,9 +210,6 @@ final class RequestTest extends TestCase
         $this->assertEquals(\sprintf('/%s', \trim($path, '/')), $request->getRequestTarget());
     }
 
-    /**
-     * @return void
-     */
     public function testGetRequestTargetFromUriWithQueryParameters(): void
     {
         $path = $this->getFaker()->word;
@@ -297,9 +232,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testWithRequestTarget(): void
     {
         $requestTarget = \sprintf('/%s', $this->getFaker()->word);
@@ -311,9 +243,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetMethod(): void
     {
         $method = $this->createRandomMethod();
@@ -321,9 +250,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($method, $this->getRequest($method)->getMethod());
     }
 
-    /**
-     * @return void
-     */
     public function testWithMethod(): void
     {
         $method = $this->createRandomMethod();
@@ -335,9 +261,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetUri(): void
     {
         $uri = $this->createUri();
@@ -345,9 +268,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($uri, $this->getRequest(null, $uri)->getUri());
     }
 
-    /**
-     * @return void
-     */
     public function testWithUri(): void
     {
         $host = $this->getFaker()->word;
@@ -362,9 +282,6 @@ final class RequestTest extends TestCase
         $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
     }
 
-    /**
-     * @return void
-     */
     public function testWithUriWithPreexistingHost(): void
     {
         $uri = $this->createUri();
@@ -379,9 +296,6 @@ final class RequestTest extends TestCase
         $this->getReflectionProperty($newRequest, 'headers')->shouldNotHaveReceived('addHeader');
     }
 
-    /**
-     * @return void
-     */
     public function testWithUriWithPreserveHostWithEmptyHostHeader(): void
     {
         $host = $this->getFaker()->word;
@@ -394,9 +308,6 @@ final class RequestTest extends TestCase
         $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
     }
 
-    /**
-     * @return void
-     */
     public function testWithUriWithPreserveHostWithNewHost(): void
     {
         $host = $this->getFaker()->word;
@@ -409,9 +320,6 @@ final class RequestTest extends TestCase
         $this->assertHeadersBagAddHeader($this->getReflectionProperty($newRequest, 'headers'), 'Host', $host);
     }
 
-    /**
-     * @return void
-     */
     public function testWithUriWithPreserveHostWithOldHost(): void
     {
         $preexistingHost = $this->getFaker()->word;
@@ -428,9 +336,6 @@ final class RequestTest extends TestCase
         $this->getReflectionProperty($newRequest, 'headers')->shouldNotHaveReceived('addHeader');
     }
 
-    /**
-     * @return void
-     */
     public function testGetServerParams(): void
     {
         $serverParams = [$this->getFaker()->word => $this->getFaker()->word];
@@ -441,9 +346,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetCookieParams(): void
     {
         $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
@@ -454,9 +356,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testWithCookieParams(): void
     {
         $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
@@ -468,9 +367,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetQueryParams(): void
     {
         $name = $this->getFaker()->word;
@@ -482,9 +378,6 @@ final class RequestTest extends TestCase
         $this->assertEquals([$name => $value], $request->getQueryParams());
     }
 
-    /**
-     * @return void
-     */
     public function testGetQueryParamsWithoutQuery(): void
     {
         $request = $this->getRequest();
@@ -492,9 +385,6 @@ final class RequestTest extends TestCase
         $this->assertEquals([], $request->getQueryParams());
     }
 
-    /**
-     * @return void
-     */
     public function testGetQueryParamsWithEncodedParameter(): void
     {
         $uri = $this->createUri();
@@ -504,9 +394,6 @@ final class RequestTest extends TestCase
         $this->assertEquals(['$' => '%'], $request->getQueryParams());
     }
 
-    /**
-     * @return void
-     */
     public function testWithQueryParams(): void
     {
         $queryParams = [$this->getFaker()->word => $this->getFaker()->word];
@@ -518,9 +405,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetUploadedFiles(): void
     {
         $uploadedFiles = [$this->getFaker()->word => $this->getFaker()->word];
@@ -529,9 +413,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($uploadedFiles, $request->getUploadedFiles());
     }
 
-    /**
-     * @return void
-     */
     public function testWithUploadedFiles(): void
     {
         $uploadedFiles = [$this->getFaker()->word => $this->getFaker()->word];
@@ -543,9 +424,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testGetParsedBody(): void
     {
         $parsedBody = [$this->getFaker()->word => $this->getFaker()->word];
@@ -554,17 +432,11 @@ final class RequestTest extends TestCase
         $this->assertEquals($parsedBody, $request->getParsedBody());
     }
 
-    /**
-     * @return void
-     */
     public function testGetParsedBodyWithoutParsedBody(): void
     {
         $this->assertNull($this->getRequest()->getParsedBody());
     }
 
-    /**
-     * @return void
-     */
     public function testWithParsedBody(): void
     {
         $parsedBody = [$this->getFaker()->word => $this->getFaker()->word];
@@ -576,9 +448,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testWithParsedBodyWithoutParsedBody(): void
     {
         $request = $this->getRequest(null, null, null, [], null, [], [], [$this->getFaker()->word => $this->getFaker()->word]);
@@ -588,9 +457,6 @@ final class RequestTest extends TestCase
         $this->assertNull($newRequest->getParsedBody());
     }
 
-    /**
-     * @return void
-     */
     public function testGetAttributes(): void
     {
         $attributes = [$this->getFaker()->word => $this->getFaker()->word];
@@ -600,9 +466,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($attributes, $request->getAttributes());
     }
 
-    /**
-     * @return void
-     */
     public function testGetAttribute(): void
     {
         $attribute = $this->getFaker()->word;
@@ -613,9 +476,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($attribute, $request->getAttribute($attributeName));
     }
 
-    /**
-     * @return void
-     */
     public function testGetAttributeWithoutAttributeFound(): void
     {
         $default = $this->getFaker()->word;
@@ -624,9 +484,6 @@ final class RequestTest extends TestCase
         $this->assertEquals($default, $request->getAttribute($this->getFaker()->word, $default));
     }
 
-    /**
-     * @return void
-     */
     public function testWithAttribute(): void
     {
         $attribute = $this->getFaker()->word;
@@ -639,9 +496,6 @@ final class RequestTest extends TestCase
         $this->assertFalse($newRequest === $request);
     }
 
-    /**
-     * @return void
-     */
     public function testWithoutAttribute(): void
     {
         $attributeName = $this->getFaker()->word;
@@ -656,21 +510,9 @@ final class RequestTest extends TestCase
 
     //endregion
 
-    /**
-     * @param string|null     $method
-     * @param Uri|null        $uri
-     * @param HeadersBag|null $headers
-     * @param array           $cookies
-     * @param Stream|null     $body
-     * @param array           $serverParams
-     * @param array           $uploadedFiles
-     * @param array|null      $parsedBody
-     *
-     * @return Request
-     */
     private function getRequest(
         string $method = null,
-        Uri $uri = null,
+        UriInterface $uri = null,
         HeadersBag $headers = null,
         array $cookies = [],
         Stream $body = null,
@@ -690,9 +532,6 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @return string
-     */
     private function createRandomMethod(): string
     {
         $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'];
