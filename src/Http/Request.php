@@ -9,20 +9,6 @@ use Psr\Http\Message\UriInterface;
 
 final class Request implements RequestContract
 {
-    private string $method;
-
-    private UriInterface $uri;
-
-    private HeadersBag $headers;
-
-    private array $cookies;
-
-    private StreamInterface $body;
-
-    private array $serverParams;
-
-    private array $uploadedFiles;
-
     private string $protocolVersion;
 
     private ?string $requestTarget;
@@ -31,27 +17,16 @@ final class Request implements RequestContract
 
     private array $attributes;
 
-    private ?array $parsedBody;
-
     public function __construct(
-        string $method,
-        UriInterface $uri,
-        HeadersBag $headers,
-        array $cookies,
-        StreamInterface $body,
-        array $serverParams = [],
-        array $uploadedFiles = [],
-        array $parsedBody = null
+        private string $method,
+        private UriInterface $uri,
+        private HeadersBag $headers,
+        private array $cookies,
+        private StreamInterface $body,
+        private array $serverParams = [],
+        private array $uploadedFiles = [],
+        private ?array $parsedBody = null
     ) {
-        $this->method        = $method;
-        $this->uri           = $uri;
-        $this->headers       = $headers;
-        $this->cookies       = $cookies;
-        $this->body          = $body;
-        $this->serverParams  = $serverParams;
-        $this->uploadedFiles = $uploadedFiles;
-        $this->parsedBody = $parsedBody;
-
         $this->protocolVersion = !empty($this->serverParams['SERVER_PROTOCOL'])
             ? $this->protocolVersion = \str_replace('HTTP/', '', $this->serverParams['SERVER_PROTOCOL'])
             : '1.1';
