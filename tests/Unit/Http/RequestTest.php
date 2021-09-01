@@ -2,8 +2,9 @@
 
 namespace Moa\Tests\Unit\Http;
 
-use Moa\Http\Contracts\HeadersBag;
+use Moa\Http\Contracts\Headers;
 use Moa\Http\Contracts\Stream;
+use Moa\Http\Cookies;
 use Moa\Http\Request;
 use Moa\Tests\Mocks\HttpMocks;
 use Moa\Tests\Reflection;
@@ -14,6 +15,28 @@ final class RequestTest extends TestCase
 {
     use HttpMocks;
     use Reflection;
+
+    private function getRequest(
+        string $method = null,
+        UriInterface $uri = null,
+        Headers $headers = null,
+        Cookies $cookies = null,
+        Stream $body = null,
+        array $serverParams = [],
+        array $uploadedFiles = [],
+        array $parsedBody = null
+    ): Request {
+        return new Request(
+            $method ?: $this->createRandomMethod(),
+            $uri ?: $this->createUri(),
+            $headers ?: $this->createHeadersBag(),
+            $cookies ?: $this->createCookies(),
+            $body ?: $this->createStream(),
+            $serverParams,
+            $uploadedFiles,
+            $parsedBody
+        );
+    }
 
     //region Tests
 
@@ -38,7 +61,7 @@ final class RequestTest extends TestCase
 
         $this->assertEquals(
             $protocolVersion,
-            $this->getRequest(null, null, null, [], null, $serverParams)
+            $this->getRequest(null, null, null, null, null, $serverParams)
                 ->getProtocolVersion()
         );
     }
@@ -171,14 +194,14 @@ final class RequestTest extends TestCase
 
         $this->assertEquals(
             $body,
-            $this->getRequest(null, null, null, [], $body)->getBody()
+            $this->getRequest(null, null, null, null, $body)->getBody()
         );
     }
 
     public function testWithBody(): void
     {
         $body = $this->createStream();
-        $request = $this->getRequest(null, null, null, [], $body);
+        $request = $this->getRequest(null, null, null, null, $body);
 
         $newRequest = $request->withBody($body);
 
@@ -342,24 +365,25 @@ final class RequestTest extends TestCase
 
         $this->assertEquals(
             $serverParams,
-            $this->getRequest(null, null, null, [], null, $serverParams)->getServerParams()
+            $this->getRequest(null, null, null, null, null, $serverParams)->getServerParams()
         );
     }
 
     public function testGetCookieParams(): void
     {
         $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
+        $cookies = $this->createCookies($cookieParams);
 
         $this->assertEquals(
             $cookieParams,
-            $this->getRequest(null, null, null, $cookieParams)->getCookieParams()
+            $this->getRequest(null, null, null, $cookies)->getCookieParams()
         );
     }
 
     public function testWithCookieParams(): void
     {
         $cookieParams = [$this->getFaker()->word => $this->getFaker()->word];
-        $request = $this->getRequest(null, null, null, $cookieParams);
+        $request = $this->getRequest(null, null, null, $this->createCookies());
 
         $newRequest = $request->withCookieParams($cookieParams);
 
@@ -408,7 +432,7 @@ final class RequestTest extends TestCase
     public function testGetUploadedFiles(): void
     {
         $uploadedFiles = [$this->getFaker()->word => $this->getFaker()->word];
-        $request = $this->getRequest(null, null, null, [], null, [], $uploadedFiles);
+        $request = $this->getRequest(null, null, null, null, null, [], $uploadedFiles);
 
         $this->assertEquals($uploadedFiles, $request->getUploadedFiles());
     }
@@ -427,7 +451,7 @@ final class RequestTest extends TestCase
     public function testGetParsedBody(): void
     {
         $parsedBody = [$this->getFaker()->word => $this->getFaker()->word];
-        $request = $this->getRequest(null, null, null, [], null, [], [], $parsedBody);
+        $request = $this->getRequest(null, null, null, null, null, [], [], $parsedBody);
 
         $this->assertEquals($parsedBody, $request->getParsedBody());
     }
@@ -450,7 +474,7 @@ final class RequestTest extends TestCase
 
     public function testWithParsedBodyWithoutParsedBody(): void
     {
-        $request = $this->getRequest(null, null, null, [], null, [], [], [$this->getFaker()->word => $this->getFaker()->word]);
+        $request = $this->getRequest(null, null, null, null, null, [], [], [$this->getFaker()->word => $this->getFaker()->word]);
 
         $newRequest = $request->withParsedBody(null);
 
@@ -509,34 +533,4 @@ final class RequestTest extends TestCase
     }
 
     //endregion
-
-    private function getRequest(
-        string $method = null,
-        UriInterface $uri = null,
-        HeadersBag $headers = null,
-        array $cookies = [],
-        Stream $body = null,
-        array $serverParams = [],
-        array $uploadedFiles = [],
-        array $parsedBody = null
-    ): Request {
-        return new Request(
-            $method ?: $this->createRandomMethod(),
-            $uri ?: $this->createUri(),
-            $headers ?: $this->createHeadersBag(),
-            $cookies,
-            $body ?: $this->createStream(),
-            $serverParams,
-            $uploadedFiles,
-            $parsedBody
-        );
-    }
-
-    private function createRandomMethod(): string
-    {
-        $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'];
-        \shuffle($methods);
-
-        return \array_shift($methods);
-    }
 }

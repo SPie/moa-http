@@ -2,14 +2,21 @@
 
 namespace Moa\Tests\Mocks;
 
-use Moa\Http\Contracts\HeadersBag;
+use Moa\Http\Contracts\Headers;
+use Moa\Http\Contracts\HeadersFactory;
 use Moa\Http\Contracts\Stream;
+use Moa\Http\Contracts\StreamFactory;
 use Moa\Http\Contracts\Uri;
+use Moa\Http\Cookies;
+use Moa\Http\Header;
 use Mockery as m;
 use Mockery\MockInterface;
 
 trait HttpMocks
 {
+    /**
+     * @return Uri|MockInterface
+     */
     private function createUri(): Uri
     {
         return m::spy(Uri::class);
@@ -47,9 +54,29 @@ trait HttpMocks
         return m::spy(Stream::class);
     }
 
-    private function createHeadersBag(): HeadersBag
+    /**
+     * @return StreamFactory|MockInterface
+     */
+    private function createStreamFactory(): StreamFactory
     {
-        return m::spy(HeadersBag::class);
+        return m::spy(StreamFactory::class);
+    }
+
+    private function mockStreamFactoryCreateStream(MockInterface $streamFactory, Stream $stream): self
+    {
+        $streamFactory
+            ->shouldReceive('createStream')
+            ->andReturn($stream);
+
+        return $this;
+    }
+
+    /**
+     * @return Headers|MockInterface
+     */
+    private function createHeadersBag(): Headers
+    {
+        return m::spy(Headers::class);
     }
 
     private function mockHeadersBagSetHeader(MockInterface $headersBag, string $name, $header): self
@@ -122,5 +149,65 @@ trait HttpMocks
             ->once();
 
         return $this;
+    }
+
+    private function mockHeadersGetCookies(MockInterface $headers, Cookies $cookies): self
+    {
+        $headers
+            ->shouldReceive('getCookies')
+            ->andReturn($cookies);
+
+        return $this;
+    }
+
+    private function mockHeadersGetContentType(MockInterface $headers, ?string $contentTypes): self
+    {
+        $headers
+            ->shouldReceive('getContentType')
+            ->andReturn($contentTypes);
+
+        return $this;
+    }
+
+    /**
+     * @return HeadersFactory|MockInterface
+     */
+    private function createHeadersFactory(): HeadersFactory
+    {
+        return m::spy(HeadersFactory::class);
+    }
+
+    private function mockHeadersFactoryCreate(MockInterface $headersFactory, Headers $headers): self
+    {
+        $headersFactory
+            ->shouldReceive('create')
+            ->andReturn($headers);
+
+        return $this;
+    }
+
+    private function createRandomMethod(array $filterMethods = []): string
+    {
+        $methods = \array_filter(
+            ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'],
+            fn (string $method) => !\in_array($method, $filterMethods)
+        );
+        \shuffle($methods);
+
+        return \array_shift($methods);
+    }
+
+    private function createCookies(array $cookieParams = []): Cookies
+    {
+        return new Cookies($cookieParams);
+    }
+
+    private function createHeader(string $name = null, string $normalizeName = null, array $value = []): Header
+    {
+        return new Header(
+            $name ?: $this->getFaker()->word,
+            $normalizeName ?: $this->getFaker()->word,
+            $value
+        );
     }
 }

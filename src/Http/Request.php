@@ -2,7 +2,7 @@
 
 namespace Moa\Http;
 
-use Moa\Http\Contracts\HeadersBag;
+use Moa\Http\Contracts\Headers;
 use Moa\Http\Contracts\Request as RequestContract;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
@@ -20,8 +20,8 @@ final class Request implements RequestContract
     public function __construct(
         private string $method,
         private UriInterface $uri,
-        private HeadersBag $headers,
-        private array $cookies,
+        private Headers $headers,
+        private Cookies $cookies,
         private StreamInterface $body,
         private array $serverParams = [],
         private array $uploadedFiles = [],
@@ -231,7 +231,7 @@ final class Request implements RequestContract
      */
     public function getCookieParams()
     {
-        return $this->cookies;
+        return $this->cookies->cookies();
     }
 
     /**
@@ -240,7 +240,7 @@ final class Request implements RequestContract
     public function withCookieParams(array $cookies)
     {
         $clone = clone $this;
-        $clone->cookies = $cookies;
+        $clone->cookies = new Cookies($cookies);
 
         return $clone;
     }

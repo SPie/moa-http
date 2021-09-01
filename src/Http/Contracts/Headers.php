@@ -2,7 +2,9 @@
 
 namespace Moa\Http\Contracts;
 
-interface HeadersBag
+use Moa\Http\Cookies;
+
+interface Headers
 {
     /**
      * @param string|string[] $header
@@ -27,4 +29,8 @@ interface HeadersBag
     public function getHeaderLine(string $name): string;
 
     public function removeHeader(string $name): self;
+
+    public function getCookies(): Cookies;
+
+    public function getContentType(): ?string;
 }
